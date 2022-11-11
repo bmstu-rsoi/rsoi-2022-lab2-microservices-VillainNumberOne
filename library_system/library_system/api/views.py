@@ -11,8 +11,16 @@ from api.messages import *
 
 
 @csrf_exempt
-def library_system_api(request, id=None):
-    pass
+def library_system_api(request, city=None):
+    if request.method == "GET":
+        if city is None:
+            libraries =  Library.objects.all()
+            library_serializer =  LibrarySerializer(libraries, many=True)
+            return JsonResponse(library_serializer.data, safe=False, status=status.HTTP_200_OK)
+        else:
+            libraries =  Library.objects.filter(city=city).all()
+            library_serializer =  LibrarySerializer(libraries, many=True)
+            return JsonResponse(library_serializer.data, safe=False, status=status.HTTP_200_OK)
     # if request.method == "GET":
     #     if id is None:
     #         persons = Person.objects.all()
