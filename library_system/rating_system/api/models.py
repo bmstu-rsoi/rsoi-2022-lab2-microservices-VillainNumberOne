@@ -9,7 +9,7 @@ from django.db import models
 
 
 class Rating(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=80)
     stars = models.IntegerField()
 
