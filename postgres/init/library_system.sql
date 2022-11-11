@@ -24,5 +24,6 @@ CREATE TABLE library_books
 (
     book_id         INT REFERENCES books (id),
     library_id      INT REFERENCES library (id),
-    available_count INT NOT NULL
+    available_count INT NOT NULL,
+    PRIMARY KEY (book_id, library_id)
 );
