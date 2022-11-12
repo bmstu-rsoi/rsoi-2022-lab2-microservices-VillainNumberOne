@@ -15,5 +15,5 @@ class LibrarySerializer(serializers.ModelSerializer):
 class LibraryBooksSerializer(serializers.ModelSerializer):
     class Meta:
         model = LibraryBooks
-        fields = ("library_uid", "name", "city", "address")
+        fields = ("book", "library", "available_count")
 

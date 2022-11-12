@@ -12,37 +12,51 @@ import api.libraries_requests
 
 
 @csrf_exempt
-def libraries(request, id=None):
+def libraries(request, library_uid=None):
     if request.method == "GET":
-        if id is None:
+        if library_uid is None:
             try:
-                data = JSONParser().parse(request)
                 page = None
                 size = None
                 city = None
-                if 'size' in data:
-                    size = data['size']
-                if 'page' in data:
-                    page = data['page']
+                if 'size' in request.GET:
+                    size = request.GET['size']
+                if 'page' in request.GET:
+                    page = request.GET['page']
                 if page is not None and size is not None:
                     pass
 
-                if 'city' in data:
-                    city = data['city']
+                if 'city' in request.GET:
+                    city = request.GET['city']
                     try:
                         libraries_data = api.libraries_requests.get_city_libraries(city)
                         return JsonResponse(libraries_data, safe=False, status=status.HTTP_200_OK)
                     except Exception:
+                        # Get response status
                         return HttpResponse(status=status.HTTP_404_NOT_FOUND)
                 else:
                     return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
             except:
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
         else:
-            pass
-            # try:
-            #     person = Person.objects.get(id=id)
-            #     person_serializer = PersonSerializer(person)
-            #     return JsonResponse(person_serializer.data, safe=False, status=status.HTTP_200_OK)
-            # except Person.DoesNotExist:
-            #     return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+            page = None
+            size = None
+            show_all = None
+            if 'size' in request.GET:
+                size = request.GET['size']
+            if 'page' in request.GET:
+                page = request.GET['page']
+            if page is not None and size is not None:
+                pass # ???
+
+            if 'showAll' in request.GET:
+                show_all = request.GET['showAll']
+            if show_all is not None:
+                pass # ???
+            
+            try:
+                librarybooks = api.libraries_requests.get_library_books(library_uid)
+                return JsonResponse(librarybooks, safe=False, status=status.HTTP_200_OK)
+            except Exception as ex:
+                # print(ex)
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)

@@ -10,65 +10,67 @@ from api.serializers import BooksSerializer, LibrarySerializer, LibraryBooksSeri
 from api.messages import *
 
 
+from django.db import connection
+import api.queries as q
+import json
+
+
 @csrf_exempt
-def library_system_api(request, city=None):
+def libraries(request):
     if request.method == "GET":
-        if city is None:
-            libraries =  Library.objects.all()
-            library_serializer =  LibrarySerializer(libraries, many=True)
-            return JsonResponse(library_serializer.data, safe=False, status=status.HTTP_200_OK)
-        else:
-            libraries =  Library.objects.filter(city=city).all()
-            library_serializer =  LibrarySerializer(libraries, many=True)
-            return JsonResponse(library_serializer.data, safe=False, status=status.HTTP_200_OK)
-    # if request.method == "GET":
-    #     if id is None:
-    #         persons = Person.objects.all()
-    #         person_serializer = PersonSerializer(persons, many=True)
-    #         return JsonResponse(person_serializer.data, safe=False, status=status.HTTP_200_OK)
-    #     else:
-    #         try:
-    #             person = Person.objects.get(id=id)
-    #             person_serializer = PersonSerializer(person)
-    #             return JsonResponse(person_serializer.data, safe=False, status=status.HTTP_200_OK)
-    #         except Person.DoesNotExist:
-    #             return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+        try:
+            data = JSONParser().parse(request)
+            page = None
+            size = None
+            city = None
+            if 'size' in data:
+                size = data['size']
+            if 'page' in data:
+                page = data['page']
+            if page is not None and size is not None:
+                pass # ???
 
-    # elif request.method == "POST":
-    #     try:
-    #         new_person = JSONParser().parse(request)
-    #     except:
-    #         return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+            if 'city' in data:
+                city = data['city']
+                try:
+                    libraries =  Library.objects.filter(city=city).all()
+                    library_serializer =  LibrarySerializer(libraries, many=True)
+                    return JsonResponse(library_serializer.data, safe=False, status=status.HTTP_200_OK)
+                except Exception:
+                    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-    #     person_serializer = PersonSerializer(data=new_person)
-    #     if person_serializer.is_valid():
-    #         result = person_serializer.save()
-    #         return HttpResponse(
-    #             headers={"Location": f"/api/v1/persons/{result.id}"}, 
-    #             status=status.HTTP_201_CREATED
-    #         )
-    #     else:
-    #         return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+def librarybooks(request):
+    if request.method == "GET":
+        try:
+            data = JSONParser().parse(request)
+            library_uid = None
+            page = None
+            size = None
+            show_all = None
+            if 'size' in data:
+                size = data['size']
+            if 'page' in data:
+                page = data['page']
+            if 'show_all' in data:
+                show_all = data['show_all']
+            if page is not None and size is not None:
+                pass # ???
+            if show_all is not None:
+                pass # ???
 
-    # elif request.method=='PATCH':
-    #     updated_data = JSONParser().parse(request)
-    #     try:
-    #         person = Person.objects.get(id=id)
-    #     except Person.DoesNotExist:
-    #         return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+            if 'library_uid' in data:
+                library_uid = data['library_uid']
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-    #     person_serializer = PersonSerializer(person, data=updated_data)
-    #     if person_serializer.is_valid():
-    #         person_serializer.save()
-    #         return JsonResponse(person_serializer.data, status=status.HTTP_200_OK)
-    #     else:
-    #         return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(q.get_library_books(library_uid), safe=False, status=status.HTTP_200_OK)
 
-    # elif request.method=='DELETE':
-    #     try:
-    #         person = Person.objects.get(id=id)
-    #     except Person.DoesNotExist:
-    #         return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
-    #     person.delete()
-    #     return HttpResponse(status=status.HTTP_204_NO_CONTENT)
+        except Exception as ex:
+            print(ex)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+    
