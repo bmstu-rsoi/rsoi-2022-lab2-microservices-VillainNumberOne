@@ -68,7 +68,11 @@ def librarybooks(request):
             else:
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-            return JsonResponse(q.get_library_books(library_uid), safe=False, status=status.HTTP_200_OK)
+            try:
+                return JsonResponse(q.get_library_books(library_uid), safe=False, status=status.HTTP_200_OK)
+            except Exception as ex:
+                print(ex)
+                return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
         except Exception as ex:
@@ -120,6 +124,27 @@ def book_info(request):
                     result[book_uid] = None
 
             return JsonResponse(result, safe=False, status=status.HTTP_200_OK)
+        except Exception as ex:
+            print(ex)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+@csrf_exempt
+def book_available_count(request):
+    if request.method == "GET":
+        try:
+            data = JSONParser().parse(request)
+            if all(k in data for k in ['library_uid', 'book_uid']):
+                library_uid = data['library_uid']
+                book_uid = data['book_uid']
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                return JsonResponse(q.get_available_count(library_uid, book_uid), safe=False, status=status.HTTP_200_OK)
+            except Exception as ex:
+                print(ex)
+                return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         except Exception as ex:
             print(ex)
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)

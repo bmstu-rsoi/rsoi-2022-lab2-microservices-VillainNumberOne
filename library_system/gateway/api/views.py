@@ -10,6 +10,7 @@ from api.messages import *
 
 import api.services_requests
 import api.utils.utils as utils
+import api.errors as errors
 
 
 @csrf_exempt
@@ -59,16 +60,47 @@ def libraries(request, library_uid=None):
                 librarybooks = api.services_requests.get_library_books(library_uid)
                 return JsonResponse(librarybooks, safe=False, status=status.HTTP_200_OK)
             except Exception as ex:
-                # print(ex)
+                print(ex)
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
+    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
 @csrf_exempt
-def libraries(request):
+def reservations(request):
     if request.method == "GET":
         headers = utils.get_http_headers(request)
         if "X_USER_NAME" in headers.keys():
             username = headers["X_USER_NAME"]
             reservations = api.services_requests.get_user_reservations(username)
             return JsonResponse(reservations, safe=False, status=status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        headers = utils.get_http_headers(request)
+        if "X_USER_NAME" in headers.keys():
+            username = headers["X_USER_NAME"]
+        else:
+            return JsonResponse(errors.reservations_no_username(), status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            data = JSONParser().parse(request)
+            if all(k in data for k in ['bookUid', 'libraryUid', 'tillDate']):
+                book_uid = data['bookUid']
+                library_uid = data['libraryUid']
+                till_date = data['tillDate']
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as ex:
+            print(ex)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            result = api.services_requests.make_reservation(username, book_uid, library_uid, till_date)
+        except Exception as ex:
+            return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        if result is not None:
+            return JsonResponse(result, safe=False, status=status.HTTP_200_OK)
+        else:
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
     return HttpResponse(status=status.HTTP_400_BAD_REQUEST)

@@ -13,7 +13,7 @@ where lb.library_id =
         cursor.execute(query)
         fetched = cursor.fetchall()
 
-    result = [
+    items = [
         {
             "id": row[0],
             "book_uid": str(row[1]),
@@ -26,5 +26,27 @@ where lb.library_id =
         for row in fetched
     ]
 
+    result = {
+        "page": 1,
+        "pageSize": 1,
+        "totalElements": 1,
+        "items": items
+    }
+
     return result
     
+def get_available_count(library_uid, book_uid):
+    query = f"""
+select available_count from library_books
+where book_id = (select "id" from books where book_uid = '{book_uid}')
+and library_id = (select "id" from "library" where library_uid = '{library_uid}')
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        fetched = cursor.fetchall()
+
+    if len(fetched) == 0:
+        return 0
+    else:
+        return fetched[0][0]
