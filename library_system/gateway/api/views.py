@@ -8,7 +8,8 @@ from rest_framework import status
 # from api.serializers import PersonSerializer
 from api.messages import *
 
-import api.libraries_requests
+import api.services_requests
+import api.utils.utils as utils
 
 
 @csrf_exempt
@@ -55,8 +56,19 @@ def libraries(request, library_uid=None):
                 pass # ???
             
             try:
-                librarybooks = api.libraries_requests.get_library_books(library_uid)
+                librarybooks = api.services_requests.get_library_books(library_uid)
                 return JsonResponse(librarybooks, safe=False, status=status.HTTP_200_OK)
             except Exception as ex:
                 # print(ex)
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+@csrf_exempt
+def libraries(request):
+    if request.method == "GET":
+        headers = utils.get_http_headers(request)
+        if "X_USER_NAME" in headers.keys():
+            username = headers["X_USER_NAME"]
+            reservations = api.services_requests.get_user_reservations(username)
+            return JsonResponse(reservations, safe=False, status=status.HTTP_200_OK)
+
+    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)

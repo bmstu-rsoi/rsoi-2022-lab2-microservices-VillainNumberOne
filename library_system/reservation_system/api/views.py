@@ -11,19 +11,14 @@ from api.messages import *
 
 
 @csrf_exempt
-def reservation_system_api(request, id=None):
+def get_user_reservations(request, username=None):
     if request.method == "GET":
-        if id is None:
-            persons = Reservation.objects.all()
+        if username is not None:
+            persons = Reservation.objects.filter(username=username).all()
             person_serializer = ReservationSerializer(persons, many=True)
             return JsonResponse(person_serializer.data, safe=False, status=status.HTTP_200_OK)
-        else:
-            try:
-                person = Reservation.objects.get(id=id)
-                person_serializer = ReservationSerializer(person)
-                return JsonResponse(person_serializer.data, safe=False, status=status.HTTP_200_OK)
-            except Reservation.DoesNotExist:
-                return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+
+    return HttpResponse(status=status.HTTP_400_BAD_REQUEST) 
 
     # elif request.method == "POST":
     #     try:
