@@ -94,13 +94,14 @@ def reservations(request):
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            result = api.services_requests.make_reservation(username, book_uid, library_uid, till_date)
+            result, error = api.services_requests.make_reservation(username, book_uid, library_uid, till_date)
         except Exception as ex:
+            print(ex)
             return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         if result is not None:
             return JsonResponse(result, safe=False, status=status.HTTP_200_OK)
         else:
-            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(errors.reservations_error(error),safe=False, status=status.HTTP_400_BAD_REQUEST)
 
     return HttpResponse(status=status.HTTP_400_BAD_REQUEST)

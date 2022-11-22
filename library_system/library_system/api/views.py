@@ -44,6 +44,8 @@ def libraries(request):
             print(ex)
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
+    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
 def librarybooks(request):
     if request.method == "GET":
         try:
@@ -79,6 +81,8 @@ def librarybooks(request):
             print(ex)
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
+    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
 @csrf_exempt
 def library_info(request):
     if request.method == "GET":
@@ -102,6 +106,8 @@ def library_info(request):
         except Exception as ex:
             print(ex)
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
         
 
 @csrf_exempt
@@ -128,6 +134,8 @@ def book_info(request):
             print(ex)
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
+    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
 @csrf_exempt
 def book_available_count(request):
     if request.method == "GET":
@@ -148,3 +156,31 @@ def book_available_count(request):
         except Exception as ex:
             print(ex)
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == "POST":
+        try:
+            data = JSONParser().parse(request)
+            if all(k in data for k in ['library_uid', 'book_uid', 'mode']):
+                library_uid = data['library_uid']
+                book_uid = data['book_uid']
+                mode = str(data['mode'])
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+            if mode == '0': # decrease
+                result = q.change_available_count(library_uid, book_uid, 0)
+            elif mode == '1': # increase
+                result =  q.change_available_count(library_uid, book_uid, 1)
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+            
+            if result:
+                return HttpResponse(status=status.HTTP_202_ACCEPTED)
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as ex:
+            print(ex)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)

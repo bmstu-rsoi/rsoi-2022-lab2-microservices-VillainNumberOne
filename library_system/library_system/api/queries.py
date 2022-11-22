@@ -50,3 +50,32 @@ and library_id = (select "id" from "library" where library_uid = '{library_uid}'
         return 0
     else:
         return fetched[0][0]
+
+def change_available_count(library_uid, book_uid, mode):
+    assert mode in [0, 1]
+    if mode == 1:
+        query = f"""
+update library_books set available_count = available_count+1
+where book_id = (select "id" from books where book_uid = '{book_uid}')
+and library_id = (select "id" from "library" where library_uid = '{library_uid}')
+        """
+    else:
+        query = f"""
+update library_books set available_count = available_count-1
+where book_id = (select "id" from books where book_uid = '{book_uid}')
+and library_id = (select "id" from "library" where library_uid = '{library_uid}')
+and available_count > 0
+        """
+    result = True
+    with connection.cursor() as cursor:
+        try:
+            cursor.execute(query)
+            connection.commit()
+            if cursor.rowcount == 0:
+                result = False
+        except Exception as ex:
+            print(ex)
+            connection.rollback()
+            result = False
+            
+    return result

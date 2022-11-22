@@ -32,3 +32,34 @@ def get_rented(request, username=None):
                 return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+@csrf_exempt
+def reservation(request):
+    if request.method == "POST":
+        try:
+            data = JSONParser().parse(request)
+            if all(k in data for k in ['username', 'book_uid', 'library_uid', 'start_date', 'till_date']):
+                username = data['username']
+                book_uid = data['book_uid']
+                library_uid = data['library_uid']
+                start_date = data['start_date']
+                till_date = data['till_date']
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                result = q.make_reservation(username, book_uid, library_uid, start_date, till_date)
+                if result:
+                    return JsonResponse(result, safe=False, status=status.HTTP_201_CREATED)
+                else:
+                    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+            except Exception as ex:
+                print(ex)
+                return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        except Exception as ex:
+            print(ex)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+            
+    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
