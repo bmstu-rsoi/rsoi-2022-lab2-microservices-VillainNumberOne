@@ -7,5 +7,6 @@ urlpatterns = [
     re_path(r'^api/v1/libraries/info$', views.library_info),
     re_path(r'^api/v1/books/info$', views.book_info),
     re_path(r'^api/v1/books/available$', views.book_available_count),
+    re_path(r'^api/v1/books/return$', views.return_book),
     # re_path(r'^api/v1/libraries/([a-zA-Z]+)$', views.library_system_api),
 ]

@@ -61,5 +61,32 @@ def reservation(request):
         except Exception as ex:
             print(ex)
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "PATCH":
+        try:
+            data = JSONParser().parse(request)
+            if all(k in data for k in ['username', 'reservation_uid', 'date']):
+                username = data['username']
+                reservation_uid = data['reservation_uid']
+                date = data['date']
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                result = q.return_book(username, reservation_uid, date)
+                if result is None:
+                    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+                if result:
+                    return JsonResponse(result, safe=False, status=status.HTTP_202_ACCEPTED)
+                else:
+                    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+            except Exception as ex:
+                print(ex)
+                return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        except Exception as ex:
+            print(ex)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
             
     return HttpResponse(status=status.HTTP_400_BAD_REQUEST)

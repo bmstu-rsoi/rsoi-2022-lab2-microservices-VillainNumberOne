@@ -105,3 +105,45 @@ def reservations(request):
             return JsonResponse(errors.reservations_error(error),safe=False, status=status.HTTP_400_BAD_REQUEST)
 
     return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+@csrf_exempt
+def return_book(request, reservation_uid=None):
+    if request.method == 'POST':
+        if reservation_uid is None:
+            HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        headers = utils.get_http_headers(request)
+        if "X_USER_NAME" in headers.keys():
+            username = headers["X_USER_NAME"]
+        else:
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            data = JSONParser().parse(request)
+            if all(k in data for k in ['condition', 'date']):
+                condition = data['condition']
+                date = data['date']
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+            if condition not in ['BAD', 'GOOD', 'EXCELLENT']:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as ex:
+            print(ex)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            result, error = api.services_requests.return_book(username, reservation_uid, condition, date)
+        except Exception as ex:
+            print(ex)
+            return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        if result:
+            return HttpResponse(status=status.HTTP_204_NO_CONTENT)
+        else:
+            if error == 404:
+                return JsonResponse(errors.return_error("Not found"), safe=False, status=status.HTTP_404_NOT_FOUND)
+            else:
+                return JsonResponse(errors.return_error(error), safe=False, status=status.HTTP_400_BAD_REQUEST)
+
+    HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+    

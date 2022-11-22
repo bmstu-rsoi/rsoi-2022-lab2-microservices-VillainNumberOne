@@ -184,3 +184,31 @@ def book_available_count(request):
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
     return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+@csrf_exempt
+def return_book(request):
+    if request.method == "PATCH":
+        try:
+            data = JSONParser().parse(request)
+            if all(k in data for k in ['book_uid', 'condition']):
+                condition = data['condition']
+                book_uid = data['book_uid']
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                result = q.return_book(book_uid, condition)
+                if result:
+                    return JsonResponse(result, safe=False, status=status.HTTP_202_ACCEPTED)
+                if result is None:
+                    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+            except Exception as ex:
+                print(ex)
+                return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        except Exception as ex:
+            print(ex)
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+    return HttpResponse(status=status.HTTP_400_BAD_REQUEST)

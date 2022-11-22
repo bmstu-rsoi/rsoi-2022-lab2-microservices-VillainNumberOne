@@ -197,3 +197,72 @@ def make_reservation(username, book_uid, library_uid, till_date):
     }
 
     return result, None
+
+
+def return_book(username, reservation_uid, condition, date):
+    # При возврате книги в Rented System изменяется статус на:
+    #   EXPIRED если дата возврата больше till_date в записи о резерве;
+    #   RETURNED если книгу сдали в срок.
+    return_data = {
+        "username": username,
+        "reservation_uid": reservation_uid,
+        "date": date,
+    }
+    return_response = requests.patch(
+        f"{RESERVATION_SYSTEM}/api/v1/reservation",
+        data=json.dumps(return_data),
+    )
+    if return_response.status_code == 404:
+        return None, 404
+    if return_response.status_code != 202:
+        return None, "Not available"
+
+    reservation_info = json.loads(return_response.text)
+    book_uid = reservation_info['book_uid']
+    library_uid = reservation_info['library_uid']
+    status = reservation_info['status']
+
+    # Выполняется запрос в Library Service для увеличения счетчика доступных книг (поле available_count).
+    available_count_data = {"book_uid": book_uid, "library_uid": library_uid, "mode": 1}
+    status_code = requests.post(
+        f"{LIBRARY_SYSTEM}/api/v1/books/available",
+        data=json.dumps(available_count_data),
+    ).status_code
+    if status_code != 202:
+        return None, "Unavailable to update available_count"
+    
+    # Update book condition
+    update_condition_data = {
+        "book_uid": book_uid,
+        "condition": condition
+    }
+    update_condition_response = requests.patch(
+        f"{LIBRARY_SYSTEM}/api/v1/books/return",
+        data=json.dumps(update_condition_data),
+    )
+    if update_condition_response.status_code != 202:
+        return None, "Unavailable to update book condition"
+    
+    conditions = json.loads(update_condition_response.text)
+
+    stars = 0
+    # Если книгу вернули позднее срока или ее состояние на момент выдачи (запись в Reservation System)
+    # отличается от состояния, в котором ее вернули, то у пользователя уменьшается количество звезд на
+    # 10 за каждое условие (сдача позднее срока и в плохом состоянии).
+    if status == 'EXPIRED':
+        stars -= 10
+    if conditions["new_condition"] != conditions["old_condition"]:
+        stars -= 10
+    
+    update_stars_data = {
+        "mode": 1 if stars > 0 else 0,
+        "amount": abs(stars) if stars < 0 else 1
+    }
+    update_stars_response = requests.patch(
+        f"{RATING_SYSTEM}/api/v1/ratings/{username}",
+        data=json.dumps(update_stars_data),
+    )
+    if update_stars_response.status_code != 202:
+        return None, "Unavailable to update user rating"
+
+    return True, None
