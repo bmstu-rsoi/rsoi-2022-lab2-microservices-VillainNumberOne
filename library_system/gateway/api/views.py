@@ -31,10 +31,10 @@ def libraries(request, library_uid=None):
                 if 'city' in request.GET:
                     city = request.GET['city']
                     try:
-                        libraries_data = api.libraries_requests.get_city_libraries(city)
+                        libraries_data = api.services_requests.get_city_libraries(city)
                         return JsonResponse(libraries_data, safe=False, status=status.HTTP_200_OK)
-                    except Exception:
-                        # Get response status
+                    except Exception as ex:
+                        print(ex)
                         return HttpResponse(status=status.HTTP_404_NOT_FOUND)
                 else:
                     return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
