@@ -8,9 +8,6 @@ RESERVATION_SYSTEM = "http://localhost:8070"
 
 
 def get_city_libraries(city, page=None, size=None):
-    if page is not None and size is not None:
-        pass
-
     data = {"city": city, "page": page, "size": size}
     response = requests.get(
         f"{LIBRARY_SYSTEM}/api/v1/libraries", data=json.dumps(data)
@@ -19,18 +16,12 @@ def get_city_libraries(city, page=None, size=None):
 
 
 def get_library_books(library_uid, page=None, size=None, show_all=None):
-    if page is not None and size is not None:
-        pass
-    if show_all is not None:
-        pass
-
     data = {
         "library_uid": library_uid,
         "page": page,
         "size": size,
         "show_all": show_all,
     }
-
     response = requests.get(
         f"{LIBRARY_SYSTEM}/api/v1/librarybooks", data=json.dumps(data)
     ).text
@@ -93,6 +84,13 @@ def get_user_reservations(username):
 
     return result
 
+def get_user_rating(username):
+    response = requests.get(f"{RATING_SYSTEM}/api/v1/ratings/{username}")
+    if response.status_code != 200:
+        return None, response.status_code
+    else:
+        user_stars = json.loads(response.text)
+        return user_stars, None
 
 def make_reservation(username, book_uid, library_uid, till_date):
     # CHECKS ##################################
@@ -101,9 +99,9 @@ def make_reservation(username, book_uid, library_uid, till_date):
     except Exception as ex:
         return None, str(ex)
     start_date = datetime.today()  # .strftime('%Y-%m-%d')
-    print(start_date, till_date)
-    if till_date <= start_date:
-        return None, "Wrong tillDate"
+    # print(start_date, till_date)
+    # if till_date <= start_date:
+    #     return None, "Wrong tillDate"
 
     available_count_data = {"library_uid": library_uid, "book_uid": book_uid}
     available_count = json.loads(
@@ -255,7 +253,7 @@ def return_book(username, reservation_uid, condition, date):
         stars -= 10
     
     update_stars_data = {
-        "mode": 1 if stars > 0 else 0,
+        "mode": 1 if stars >= 0 else 0,
         "amount": abs(stars) if stars < 0 else 1
     }
     update_stars_response = requests.patch(

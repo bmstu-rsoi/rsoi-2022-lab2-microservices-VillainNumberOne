@@ -1,7 +1,7 @@
 from django.db import connection
 
 
-def get_library_books(library_uid):
+def get_library_books(library_uid, page, size, show_all):
     query = f"""
 select b.id, b.book_uid, b.name, b.author, b.genre, b.condition, lb.available_count
 from books as b 
@@ -9,6 +9,10 @@ join library_books as lb on b.id = lb.book_id
 where lb.library_id = 
 (select id from library where library_uid = '{library_uid}')
     """
+    if not show_all:
+        query += f"""
+ and lb.available_count > 0
+        """
     with connection.cursor() as cursor:
         cursor.execute(query)
         fetched = cursor.fetchall()
@@ -16,17 +20,27 @@ where lb.library_id =
     items = [
         {
             "id": row[0],
-            "book_uid": str(row[1]),
+            "bookUid": str(row[1]),
             "name": row[2],
             "author": row[3],
             "genre": row[4],
             "condition": row[5],
-            "available_count": row[6],
+            "availableCount": row[6],
         }
         for row in fetched
     ]
 
-    result = {"page": 1, "pageSize": 1, "totalElements": 1, "items": items}
+    if len(items) > 0:
+        if page is not None and size is not None:
+            if page > 0 and size > 0:
+                if len(items) >= page * size:
+                    items = items[(page - 1) * size : page * size]
+        else:
+            page = 1
+            size = 1
+            items = items[(page - 1) * size : page * size]
+
+    result = {"page": page, "pageSize": size, "totalElements": len(items), "items": items}
 
     return result
 

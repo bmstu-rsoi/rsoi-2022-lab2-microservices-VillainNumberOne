@@ -23,20 +23,48 @@ def libraries(request):
             page = None
             size = None
             city = None
-            if 'size' in data:
-                size = data['size']
-            if 'page' in data:
-                page = data['page']
-            if page is not None and size is not None:
-                pass # ???
+            if "size" in data:
+                size = int(data["size"])
+            if "page" in data:
+                page = int(data["page"])
 
-            if 'city' in data:
-                city = data['city']
+            if "city" in data:
+                city = data["city"]
                 try:
                     libraries = Library.objects.filter(city=city).all()
                     library_serializer = LibrarySerializer(libraries, many=True)
-                    return JsonResponse(library_serializer.data, safe=False, status=status.HTTP_200_OK)
-                except Exception:
+
+                    items = library_serializer.data
+                    if len(items) > 0:
+                        if page is not None and size is not None:
+                            if page > 0 and size > 0:
+                                if len(items) >= page * size:
+                                    items = items[(page - 1) * size : page * size]
+                        else:
+                            page = 1
+                            size = 1
+                            items = items[(page - 1) * size : page * size]
+
+                    items = [
+                        {
+                            "libraryUid": item["library_uid"],
+                            "name": item["name"],
+                            "address": item["address"],
+                            "city": item["city"],
+                        }
+                        for item in items
+                    ]
+
+                    result = {
+                        "page": page,
+                        "pageSize": size,
+                        "totalElements": len(items),
+                        "items": items,
+                    }
+
+                    return JsonResponse(result, safe=False, status=status.HTTP_200_OK)
+                except Exception as ex:
+                    print(ex)
                     return HttpResponse(status=status.HTTP_404_NOT_FOUND)
             else:
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
@@ -46,36 +74,37 @@ def libraries(request):
 
     return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
+
 def librarybooks(request):
     if request.method == "GET":
         try:
             data = JSONParser().parse(request)
             library_uid = None
-            page = None
-            size = None
-            show_all = None
-            if 'size' in data:
-                size = data['size']
-            if 'page' in data:
-                page = data['page']
-            if 'show_all' in data:
-                show_all = data['show_all']
-            if page is not None and size is not None:
-                pass # ???
-            if show_all is not None:
-                pass # ???
+            page = 1
+            size = 1
+            show_all = True
+            if "size" in data:
+                size = int(data["size"])
+            if "page" in data:
+                page = int(data["page"])
+            if "show_all" in data:
+                if data["show_all"] in ["False", "false"]:
+                    show_all = False
 
-            if 'library_uid' in data:
-                library_uid = data['library_uid']
+            if "library_uid" in data:
+                library_uid = data["library_uid"]
             else:
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
             try:
-                return JsonResponse(q.get_library_books(library_uid), safe=False, status=status.HTTP_200_OK)
+                return JsonResponse(
+                    q.get_library_books(library_uid, page, size, show_all),
+                    safe=False,
+                    status=status.HTTP_200_OK,
+                )
             except Exception as ex:
                 print(ex)
                 return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
         except Exception as ex:
             print(ex)
@@ -83,13 +112,14 @@ def librarybooks(request):
 
     return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
+
 @csrf_exempt
 def library_info(request):
     if request.method == "GET":
         try:
             data = JSONParser().parse(request)
-            if 'libraries_list' in data:
-                libraries_list = set(data['libraries_list'])
+            if "libraries_list" in data:
+                libraries_list = set(data["libraries_list"])
             else:
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
@@ -108,15 +138,15 @@ def library_info(request):
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
     return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
-        
+
 
 @csrf_exempt
 def book_info(request):
     if request.method == "GET":
         try:
             data = JSONParser().parse(request)
-            if 'books_list' in data:
-                books_list = set(data['books_list'])
+            if "books_list" in data:
+                books_list = set(data["books_list"])
             else:
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
@@ -136,19 +166,24 @@ def book_info(request):
 
     return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
+
 @csrf_exempt
 def book_available_count(request):
     if request.method == "GET":
         try:
             data = JSONParser().parse(request)
-            if all(k in data for k in ['library_uid', 'book_uid']):
-                library_uid = data['library_uid']
-                book_uid = data['book_uid']
+            if all(k in data for k in ["library_uid", "book_uid"]):
+                library_uid = data["library_uid"]
+                book_uid = data["book_uid"]
             else:
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
             try:
-                return JsonResponse(q.get_available_count(library_uid, book_uid), safe=False, status=status.HTTP_200_OK)
+                return JsonResponse(
+                    q.get_available_count(library_uid, book_uid),
+                    safe=False,
+                    status=status.HTTP_200_OK,
+                )
             except Exception as ex:
                 print(ex)
                 return HttpResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -160,20 +195,20 @@ def book_available_count(request):
     elif request.method == "POST":
         try:
             data = JSONParser().parse(request)
-            if all(k in data for k in ['library_uid', 'book_uid', 'mode']):
-                library_uid = data['library_uid']
-                book_uid = data['book_uid']
-                mode = str(data['mode'])
+            if all(k in data for k in ["library_uid", "book_uid", "mode"]):
+                library_uid = data["library_uid"]
+                book_uid = data["book_uid"]
+                mode = str(data["mode"])
             else:
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-            if mode == '0': # decrease
+            if mode == "0":  # decrease
                 result = q.change_available_count(library_uid, book_uid, 0)
-            elif mode == '1': # increase
-                result =  q.change_available_count(library_uid, book_uid, 1)
+            elif mode == "1":  # increase
+                result = q.change_available_count(library_uid, book_uid, 1)
             else:
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
-            
+
             if result:
                 return HttpResponse(status=status.HTTP_202_ACCEPTED)
             else:
@@ -185,21 +220,24 @@ def book_available_count(request):
 
     return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
+
 @csrf_exempt
 def return_book(request):
     if request.method == "PATCH":
         try:
             data = JSONParser().parse(request)
-            if all(k in data for k in ['book_uid', 'condition']):
-                condition = data['condition']
-                book_uid = data['book_uid']
+            if all(k in data for k in ["book_uid", "condition"]):
+                condition = data["condition"]
+                book_uid = data["book_uid"]
             else:
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
             try:
                 result = q.return_book(book_uid, condition)
                 if result:
-                    return JsonResponse(result, safe=False, status=status.HTTP_202_ACCEPTED)
+                    return JsonResponse(
+                        result, safe=False, status=status.HTTP_202_ACCEPTED
+                    )
                 if result is None:
                     return HttpResponse(status=status.HTTP_404_NOT_FOUND)
                 return HttpResponse(status=status.HTTP_400_BAD_REQUEST)

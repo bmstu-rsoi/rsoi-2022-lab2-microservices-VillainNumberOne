@@ -13,3 +13,4 @@ insert into rating (id, username, stars) values ('11', 'mjeal0', '95');
 insert into rating (id, username, stars) values ('12', 'bnorthcliffe9', '77');
 insert into rating (id, username, stars) values ('13', 'apettiward7', '10');
 insert into rating (id, username, stars) values ('14', 'etenniswood3', '60');
+insert into rating (id, username, stars) values ('15', 'Test Max', '75');
