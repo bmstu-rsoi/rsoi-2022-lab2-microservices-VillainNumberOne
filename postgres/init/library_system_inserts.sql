@@ -1,4 +1,4 @@
-insert into books (id, book_uid, name, author, genre, condition) values ('1', 'f7cdc58f-2caf-4b15-9727-f89dcc629b27', '������� ���� C++ � 7 �����', '����� ����������', '������� ����������', 'GOOD');
+insert into books (id, book_uid, name, author, genre, condition) values ('1', 'f7cdc58f-2caf-4b15-9727-f89dcc629b27', 'Краткий курс C++ в 7 томах', 'Бьерн Страуструп', 'Научная фантастика', 'GOOD');
 insert into books (id, book_uid, name, author, genre, condition) values ('2', gen_random_uuid(), 'The Pool Boys', 'Brig Swettenham', 'Comedy', 'BAD');
 insert into books (id, book_uid, name, author, genre, condition) values ('3', gen_random_uuid(), 'Dragon Fist (Long quan)', 'Reyna Imort', 'Action|Drama', 'EXCELLENT');
 insert into books (id, book_uid, name, author, genre, condition) values ('4', gen_random_uuid(), 'Men of Means', 'Juliet Booker', 'Action|Drama', 'EXCELLENT');
@@ -100,7 +100,7 @@ insert into books (id, book_uid, name, author, genre, condition) values ('99', g
 insert into books (id, book_uid, name, author, genre, condition) values ('100', gen_random_uuid(), 'Producers, The', 'Dee Lakeman', 'Comedy', 'BAD');
 insert into books (id, book_uid, name, author, genre, condition) values ('101', gen_random_uuid(), 'Defending Your Life', 'Cordy Glew', 'Comedy|Drama|Fantasy|Romance', 'GOOD');
 
-insert into library (id, library_uid, name, city, address) values ('1', '83575e12-7ce0-48ee-9931-51919ff3c9ee', '���������� ����� 7 ��������', '������', '2-� ���������� ��., �.5, ���.1');
+insert into library (id, library_uid, name, city, address) values ('1', '83575e12-7ce0-48ee-9931-51919ff3c9ee', 'Библиотека имени 7 Непьющих', 'Москва', '2-я Бауманская ул., д.5, стр.1');
 insert into library (id, library_uid, name, city, address) values ('2', gen_random_uuid(), 'Salinas Valley Maximum Security Prison', 'Soledad', 'CA 93960');
 insert into library (id, library_uid, name, city, address) values ('3', gen_random_uuid(), 'Bertina Ashburner', 'Villa Carlos Paz', '69 Boyd Avenue');
 insert into library (id, library_uid, name, city, address) values ('4', gen_random_uuid(), 'Shay Manton', 'Kim Sơn', '224 Sycamore Plaza');
@@ -311,6 +311,5 @@ insert into library_books (book_id, library_id, available_count) values ('53', '
 insert into library_books (book_id, library_id, available_count) values ('36', '11', '1');
 insert into library_books (book_id, library_id, available_count) values ('10', '11', '1');
 insert into library_books (book_id, library_id, available_count) values ('87', '5', '1');
-insert into library_books (book_id, library_id, available_count) values ('99', '12', '1');
 insert into library_books (book_id, library_id, available_count) values ('61', '5', '1');
 insert into library_books (book_id, library_id, available_count) values ('76', '3', '1');

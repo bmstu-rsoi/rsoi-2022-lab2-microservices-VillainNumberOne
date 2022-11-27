@@ -2,9 +2,9 @@ import requests
 import json
 from datetime import datetime
 
-LIBRARY_SYSTEM = "http://localhost:8060"
-RATING_SYSTEM = "http://localhost:8050"
-RESERVATION_SYSTEM = "http://localhost:8070"
+LIBRARY_SYSTEM = "http://librarysystem:8060"
+RATING_SYSTEM = "http://ratingsystem:8050"
+RESERVATION_SYSTEM = "http://reservationsystem:8070"
 
 
 def get_city_libraries(city, page=None, size=None):
