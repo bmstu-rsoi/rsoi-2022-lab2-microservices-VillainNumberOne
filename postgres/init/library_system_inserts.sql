@@ -1,4 +1,4 @@
-insert into books (id, book_uid, name, author, genre, condition) values ('1', 'f7cdc58f-2caf-4b15-9727-f89dcc629b27', 'Краткий курс C++ в 7 томах', 'Бьерн Страуструп', 'Научная фантастика', 'GOOD');
+insert into books (id, book_uid, name, author, genre, condition) values ('1', 'f7cdc58f-2caf-4b15-9727-f89dcc629b27', 'Краткий курс C++ в 7 томах', 'Бьерн Страуструп', 'Научная фантастика', 'EXCELLENT');
 insert into books (id, book_uid, name, author, genre, condition) values ('2', gen_random_uuid(), 'The Pool Boys', 'Brig Swettenham', 'Comedy', 'BAD');
 insert into books (id, book_uid, name, author, genre, condition) values ('3', gen_random_uuid(), 'Dragon Fist (Long quan)', 'Reyna Imort', 'Action|Drama', 'EXCELLENT');
 insert into books (id, book_uid, name, author, genre, condition) values ('4', gen_random_uuid(), 'Men of Means', 'Juliet Booker', 'Action|Drama', 'EXCELLENT');
