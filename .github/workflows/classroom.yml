@@ -27,16 +27,20 @@ jobs:
         timeout-minutes: 5
         run: |
           docker compose up -d
-          ./scripts/wait-script.sh
         env:
-          - WAIT_PORTS=8080,8070,8060,8050
+          WAIT_PORTS: 8080,8070,8060,8050
+
+      - name: Wait 30s
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '30s'
 
       - name: Run API Tests
         uses: matt-ball/newman-action@master
         with:
           # TODO insert your variant
-          collection: <variant>/postman/collection.json
-          environment: <variant>/postman/environment.json
+          collection: v4/postman/collection.json
+          environment: v4/postman/environment.json
           delayRequest: 100
           reporters: '[ "cli" ]'
 
